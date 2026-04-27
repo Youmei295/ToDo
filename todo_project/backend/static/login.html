@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Sign-In</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script>
+        var returnUrl = 'http://localhost:8501/';
+        
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const apiKey = urlParams.get('api_key');
+            const projectId = urlParams.get('project_id');
+            if (urlParams.get('return_url')) {
+                returnUrl = urlParams.get('return_url');
+            }
+
+            if (!apiKey || !projectId) {
+                document.getElementById("message").innerHTML = "Error: Missing Firebase configuration parameters.";
+                document.getElementById("loginBtn").style.display = "none";
+                return;
+            }
+
+            const firebaseConfig = {
+                apiKey: apiKey,
+                authDomain: projectId + ".firebaseapp.com"
+            };
+            
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+        };
+
+        function doLogin() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            document.getElementById("message").innerHTML = "Waiting for Google...";
+            
+            firebase.auth().signInWithPopup(provider).then(function(result) {
+                document.getElementById("message").innerHTML = "Authenticating with Streamlit...";
+                return result.user.getIdToken();
+            }).then(function(token) {
+                window.location.href = returnUrl + "?token=" + token;
+            }).catch(function(error) {
+                console.error(error);
+                document.getElementById("message").innerHTML = "Google Sign-in failed: " + error.message + "<br><br><a href='" + returnUrl + "'>Return to App</a>";
+            });
+        }
+    </script>
+</head>
+<body style="font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5;">
+    <h3 id="message" style="margin-bottom: 20px;">Ready to connect to Google</h3>
+    <button id="loginBtn" onclick="doLogin()" style="padding: 12px 24px; background-color: #4285F4; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
+        🚀 Click to Open Google Sign-In
+    </button>
+</body>
+</html>

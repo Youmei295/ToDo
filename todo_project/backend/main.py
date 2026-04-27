@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, Header, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import firebase_admin
@@ -15,6 +16,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files (used for Google Sign-in popup workaround)
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
 # Initialize Firebase Admin SDK
 # Ensure firebase_service_account.json is in the backend directory
